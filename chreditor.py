@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#
+# This is an edit server for use with the "Edit in Emacs" extension
+# for Chrome.
+#
+# http://github.com/larsks/chreditor
 
 import os
 import sys
@@ -6,13 +11,13 @@ import argparse
 import tempfile
 import urlparse
 import shlex
-import yaml
 import logging
 
 import gevent
 from gevent import monkey; monkey.patch_all()
 from gevent import subprocess
 import bottle
+import yaml
 
 default_config_file = os.path.join(
         os.environ['HOME'],
@@ -21,8 +26,9 @@ default_config_file = os.path.join(
 default_edit_command = 'gvim -f --servername WEB --remote-tab-wait-silent'
 
 app = bottle.app()
-config = {}
 log = None
+config = {}
+
 
 @app.route('/status')
 def do_status():
@@ -41,13 +47,17 @@ def do_edit():
         fd.write(data_in)
 
     try:
-        subprocess.check_call(shlex.split(cmd) + [fd.name])
+        cmd = shlex.split(cmd) + [fd.name]
+        log.debug('running command: %s', ' '.join('"%s"' % x for x in cmd))
+        retcode = subprocess.check_call(cmd)
+        log.debug('command returned: %d', retcode)
     except OSError as detail:
         log.warn('failed to run editor: %s', detail)
 
     with open(fd.name) as fd:
         data_out = fd.read()
         yield data_out
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -57,8 +67,20 @@ def parse_args():
     p.add_argument('--debug', action='store_true')
     return p.parse_args()
 
-def main():
+
+def load_config(config_file):
     global config
+    log.debug('trying to load configuration from %s', config_file)
+
+    try:
+        with open(config_file) as fd:
+            log.info('loading configuation from %s', config_file)
+            config = yaml.load(fd)['chreditor']
+    except (IOError, KeyError):
+        pass
+
+
+def main():
     global log
 
     args = parse_args()
@@ -74,12 +96,16 @@ def main():
             format='%(asctime)s %(message)s')
 
     log = logging.getLogger('chreditor')
+    load_config(args.config)
 
-    try:
-        with open(args.config) as fd:
-            config = yaml.load(fd)['chreditor']
-    except (IOError, KeyError):
-        pass
+    sys.stderr.write('\n'.join([
+    '======================================================================',
+    'Creditor ("Edit with Emacs" edit server for Linux and OS X)',
+    'by Lars Kellogg-Stedman <lars@oddbit.com>',
+    'http://github.com/larsks/chreditor',
+    '======================================================================',
+    '',
+    ]))
 
     app.run(server='gevent', port=args.port, debug=args.debug)
 
