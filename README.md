@@ -7,7 +7,22 @@ OS X.
 [1]: https://chrome.google.com/webstore/detail/edit-with-emacs/
 [2]: https://www.google.com/intl/en/chrome/browser/
 
+## Using on Linux
+
+Run the `chreditor.py` script directory, or install it using `pip`:
+
+    pip install .
+
+Or install it using `easy_install`:
+
+    easy_install .
+
+And then run `chreditor`.
+
 ## Using on OS X
+
+You can follow the Linux instructions if you'll be running Chreditor
+form the command line.
 
 The `build-osx-app` script will generate an OS X application
 ("Chreditor.app") using the [Platypus][3] command line tool.
