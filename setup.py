@@ -8,7 +8,8 @@ setup(name='chreditor',
       author='Lars Kellogg-Stedman',
       author_email='lars@oddbit.com',
       url='http://github.com/larsks/chreditor',
-      modules=['chreditor'],
+      py_modules=['chreditor'],
+      install_requires=open('requirements.txt').readlines(),
       entry_points = {
           'console_scripts': [
                 'chreditor = chreditor:main',
