@@ -45,3 +45,5 @@ Support configuration options:
 - `editor` -- specify a complete editor command line. The filename
   will be appended to this command.
 
+[4]: https://en.wikipedia.org/wiki/YAML
+
