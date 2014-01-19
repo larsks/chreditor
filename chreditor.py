@@ -100,7 +100,7 @@ def main():
 
     sys.stderr.write('\n'.join([
     '======================================================================',
-    'Creditor ("Edit with Emacs" edit server for Linux and OS X)',
+    'Chreditor ("Edit with Emacs" edit server for Linux and OS X)',
     'by Lars Kellogg-Stedman <lars@oddbit.com>',
     'http://github.com/larsks/chreditor',
     '======================================================================',
