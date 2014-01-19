@@ -1,0 +1,3 @@
+PyYAML
+gevent>=1.0
+bottle
