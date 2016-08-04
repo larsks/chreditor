@@ -13,26 +13,25 @@ import urlparse
 import shlex
 import logging
 
-import gevent
-from gevent import monkey; monkey.patch_all()
-from gevent import subprocess
+import subprocess
 import bottle
 import yaml
 
 default_config_file = os.path.join(
-        os.environ['HOME'],
-        '.config', 'chreditor.yml')
+    os.environ['HOME'],
+    '.config', 'chreditor.yml')
 
-default_edit_command = 'gvim -f --servername WEB --remote-tab-wait-silent'
+default_edit_command = 'gvim -f'
 
 app = bottle.app()
-log = None
+log = logging.getLogger('chreditor')
 config = {}
 
 
 @app.route('/status')
 def do_status():
     return 'active'
+
 
 @app.route('/edit', method='post')
 def do_edit():
@@ -61,10 +60,18 @@ def do_edit():
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument('--port', '-p', default='45068')
+    p.add_argument('--port', '-p', default='9292')
     p.add_argument('--config', '-f',
-            default=default_config_file)
-    p.add_argument('--debug', action='store_true')
+                   default=default_config_file)
+    p.add_argument('--debug', action='store_const',
+                   const='DEBUG',
+                   dest='loglevel')
+
+    p.add_argument('--verbose', action='store_const',
+                   const='INFO',
+                   dest='loglevel')
+
+    p.set_defaults(loglevel='WARNING')
     return p.parse_args()
 
 
@@ -84,31 +91,24 @@ def main():
     global log
 
     args = parse_args()
-    
-    if args.debug:
-        loglevel = logging.DEBUG
-    else:
-        loglevel = logging.WARN
 
     logging.basicConfig(
-            level=loglevel,
-            datefmt='%Y-%m-%d %H:%M:%S',
-            format='%(asctime)s %(message)s')
+        level=args.loglevel,
+        datefmt='%Y-%m-%d %H:%M:%S',
+        format='%(asctime)s %(message)s')
 
-    log = logging.getLogger('chreditor')
     load_config(args.config)
 
     sys.stderr.write('\n'.join([
-    '======================================================================',
-    'Chreditor ("Edit with Emacs" edit server for Linux and OS X)',
-    'by Lars Kellogg-Stedman <lars@oddbit.com>',
-    'http://github.com/larsks/chreditor',
-    '======================================================================',
-    '',
+        '===================================================================',
+        'Chreditor ("Edit with Emacs" edit server for Linux and OS X)',
+        'by Lars Kellogg-Stedman <lars@oddbit.com>',
+        'http://github.com/larsks/chreditor',
+        '===================================================================',
+        '',
     ]))
 
-    app.run(server='gevent', port=args.port, debug=args.debug)
+    app.run(port=args.port, debug=(args.loglevel == 'DEBUG'))
 
 if __name__ == '__main__':
     main()
-
